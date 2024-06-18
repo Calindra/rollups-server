@@ -1,27 +1,27 @@
 package main
 
 import (
-	"net/http"
+	"fmt"
 	"time"
 
+	"github.com/calindra/rollups-server/src/model"
+	"github.com/calindra/rollups-server/src/rollup"
+	"github.com/calindra/rollups-server/src/sequencer"
+	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
 
-const DefaultHttpPort = 8080
+const DefaultRollupsPort = 5004
 const HttpTimeout = 10 * time.Second
 
-type User struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
-}
-
-var users = []User{
-	{ID: 1, Name: "Alice"},
-	{ID: 2, Name: "Bob"},
-}
-
 func main() {
+
+	db := sqlx.MustConnect("sqlite3", "file:memory1?mode=memory&cache=shared")
+	//decoder := container.GetOutputDecoder()
+
+	modelInstance := model.NewNonodoModel(nil, db)
+
 	e := echo.New()
 	e.Use(middleware.CORS())
 	e.Use(middleware.Recover())
@@ -30,11 +30,8 @@ func main() {
 		Timeout:      HttpTimeout,
 	}))
 
-	e.GET("/users", getUsers)
+	inputBoxSequencer := sequencer.NewInputBoxSequencer(modelInstance)
 
-	e.Start(":8080")
-}
-
-func getUsers(c echo.Context) error {
-	return c.JSON(http.StatusOK, users)
+	rollup.Register(e, modelInstance, inputBoxSequencer)
+	e.Start(fmt.Sprintf(":%s", DefaultRollupsPort))
 }
