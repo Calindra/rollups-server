@@ -5,26 +5,26 @@ import (
 )
 
 type InputBoxSequencer struct {
-	model *model.NonodoModel
+	model *model.AppModel
 }
 
-func NewInputBoxSequencer(model *model.NonodoModel) *InputBoxSequencer {
+func NewInputBoxSequencer(model *model.AppModel) *InputBoxSequencer {
 	return &InputBoxSequencer{model: model}
 }
 
-func NewEspressoSequencer(model *model.NonodoModel) *EspressoSequencer {
+func NewEspressoSequencer(model *model.AppModel) *EspressoSequencer {
 	return &EspressoSequencer{model: model}
 }
 
 type EspressoSequencer struct {
-	model *model.NonodoModel
+	model *model.AppModel
 }
 
 func (es *EspressoSequencer) FinishAndGetNext(accept bool) model.Input {
 	return FinishAndGetNext(es.model, accept)
 }
 
-func FinishAndGetNext(m *model.NonodoModel, accept bool) model.Input {
+func FinishAndGetNext(m *model.AppModel, accept bool) model.Input {
 	m.Mutex.Lock()
 	defer m.Mutex.Unlock()
 

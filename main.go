@@ -20,7 +20,7 @@ func main() {
 	db := sqlx.MustConnect("sqlite3", "file:memory1?mode=memory&cache=shared")
 	//decoder := container.GetOutputDecoder()
 
-	modelInstance := model.NewNonodoModel(nil, db)
+	modelInstance := model.NewAppModel(nil, db)
 
 	e := echo.New()
 	e.Use(middleware.CORS())

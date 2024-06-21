@@ -23,14 +23,14 @@ const FinishRetries = 50
 const FinishPollInterval = time.Millisecond * 100
 
 // Register the rollup API to echo
-func Register(e *echo.Echo, model *mdl.NonodoModel, sequencer Sequencer) {
+func Register(e *echo.Echo, model *mdl.AppModel, sequencer Sequencer) {
 	var rollupAPI ServerInterface = &RollupAPI{model, sequencer}
 	RegisterHandlers(e, rollupAPI)
 }
 
 // Shared struct for request handlers.
 type RollupAPI struct {
-	model     *mdl.NonodoModel
+	model     *mdl.AppModel
 	sequencer Sequencer
 }
 

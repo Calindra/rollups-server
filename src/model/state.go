@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/calindra/rollups-server/src/repository"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
@@ -51,29 +50,29 @@ type Decoder interface {
 //
 
 // In the idle state, the model waits for an finish request from the rollups API.
-type rollupsStateIdle struct{}
+type RollupsStateIdle struct{}
 
-func NewRollupsStateIdle() *rollupsStateIdle {
-	return &rollupsStateIdle{}
+func NewRollupsStateIdle() *RollupsStateIdle {
+	return &RollupsStateIdle{}
 }
 
-func (s *rollupsStateIdle) Finish(status CompletionStatus) {
+func (s *RollupsStateIdle) Finish(status CompletionStatus) {
 	// Do nothing
 }
 
-func (s *rollupsStateIdle) AddVoucher(destination common.Address, payload []byte) (int, error) {
+func (s *RollupsStateIdle) AddVoucher(destination common.Address, payload []byte) (int, error) {
 	return 0, fmt.Errorf("cannot add voucher in idle state")
 }
 
-func (s *rollupsStateIdle) AddNotice(payload []byte) (int, error) {
+func (s *RollupsStateIdle) AddNotice(payload []byte) (int, error) {
 	return 0, fmt.Errorf("cannot add notice in current state")
 }
 
-func (s *rollupsStateIdle) AddReport(payload []byte) error {
+func (s *RollupsStateIdle) AddReport(payload []byte) error {
 	return fmt.Errorf("cannot add report in current state")
 }
 
-func (s *rollupsStateIdle) RegisterException(payload []byte) error {
+func (s *RollupsStateIdle) RegisterException(payload []byte) error {
 	return fmt.Errorf("cannot register exception in current state")
 }
 
@@ -88,15 +87,15 @@ type rollupsStateAdvance struct {
 	notices          []Notice
 	reports          []Report
 	decoder          Decoder
-	reportRepository *repository.ReportRepository
-	inputRepository  *repository.InputRepository
+	reportRepository *ReportRepository
+	inputRepository  *InputRepository
 }
 
 func NewRollupsStateAdvance(
 	input *AdvanceInput,
 	decoder Decoder,
-	reportRepository *repository.ReportRepository,
-	inputRepository *repository.InputRepository,
+	reportRepository *ReportRepository,
+	inputRepository *InputRepository,
 ) *rollupsStateAdvance {
 	slog.Info("nonodo: processing advance", "index", input.Index)
 	return &rollupsStateAdvance{
@@ -151,7 +150,7 @@ func sendAllInputNoticesToDecoder(decoder Decoder, inputIndex uint64, notices []
 	}
 }
 
-func saveAllReports(reportRepository *repository.ReportRepository, reports []Report) {
+func saveAllReports(reportRepository *ReportRepository, reports []Report) {
 	if reportRepository == nil {
 		slog.Warn("Missing reportRepository to save reports")
 		return

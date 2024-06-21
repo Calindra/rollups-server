@@ -10,8 +10,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/calindra/rollups-server/src/model"
-	"github.com/calindra/rollups-server/src/repository"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/jmoiron/sqlx"
@@ -19,37 +17,37 @@ import (
 
 // Nonodo model shared among the internal workers.
 // The model store inputs as pointers because these pointers are shared with the rollup state.
-type NonodoModel struct {
+type AppModel struct {
 	Mutex            sync.Mutex
 	Inspects         []*InspectInput
 	State            rollupsState
 	Decoder          Decoder
-	ReportRepository *repository.ReportRepository
-	InputRepository  *repository.InputRepository
+	ReportRepository *ReportRepository
+	InputRepository  *InputRepository
 }
 
-func (m *NonodoModel) GetInputRepository() *repository.InputRepository {
-	return m.InputRepository
-}
+func NewAppModel(decoder Decoder, db *sqlx.DB) *AppModel {
 
-// Create a new model.
-func NewNonodoModel(decoder Decoder, db *sqlx.DB) *NonodoModel {
-	reportRepository := repository.ReportRepository{Db: db}
+	reportRepository := ReportRepository{Db: db}
 	err := reportRepository.CreateTables()
 	if err != nil {
 		panic(err)
 	}
-	inputRepository := repository.InputRepository{Db: db}
+	inputRepository := InputRepository{Db: db}
 	err = inputRepository.CreateTables()
 	if err != nil {
 		panic(err)
 	}
-	return &NonodoModel{
-		State:            &rollupsStateIdle{},
+	return &AppModel{
+		State:            &RollupsStateIdle{},
 		Decoder:          decoder,
 		ReportRepository: &reportRepository,
 		InputRepository:  &inputRepository,
 	}
+}
+
+func (m *AppModel) GetInputRepository() *InputRepository {
+	return m.InputRepository
 }
 
 //
@@ -57,7 +55,7 @@ func NewNonodoModel(decoder Decoder, db *sqlx.DB) *NonodoModel {
 //
 
 // Add an advance input to the model.
-func (m *NonodoModel) AddAdvanceInput(
+func (m *AppModel) AddAdvanceInput(
 	sender common.Address,
 	payload []byte,
 	blockNumber uint64,
@@ -88,7 +86,7 @@ func (m *NonodoModel) AddAdvanceInput(
 
 // Add an inspect input to the model.
 // Return the inspect input index that should be used for polling.
-func (m *NonodoModel) AddInspectInput(payload []byte) int {
+func (m *AppModel) AddInspectInput(payload []byte) int {
 	m.Mutex.Lock()
 	defer m.Mutex.Unlock()
 
@@ -106,7 +104,7 @@ func (m *NonodoModel) AddInspectInput(payload []byte) int {
 }
 
 // Get the inspect input from the model.
-func (m *NonodoModel) GetInspectInput(index int) InspectInput {
+func (m *AppModel) GetInspectInput(index int) InspectInput {
 	m.Mutex.Lock()
 	defer m.Mutex.Unlock()
 
@@ -124,7 +122,7 @@ func (m *NonodoModel) GetInspectInput(index int) InspectInput {
 // If there is no input to be processed return nil.
 //
 // Note: use in v2 the sequencer instead.
-func (m *NonodoModel) FinishAndGetNext(accepted bool) Input {
+func (m *AppModel) FinishAndGetNext(accepted bool) Input {
 	m.Mutex.Lock()
 	defer m.Mutex.Unlock()
 
@@ -168,7 +166,7 @@ func (m *NonodoModel) FinishAndGetNext(accepted bool) Input {
 // Add a voucher to the model.
 // Return the voucher index within the input.
 // Return an error if the state isn't advance.
-func (m *NonodoModel) AddVoucher(destination common.Address, payload []byte) (int, error) {
+func (m *AppModel) AddVoucher(destination common.Address, payload []byte) (int, error) {
 	m.Mutex.Lock()
 	defer m.Mutex.Unlock()
 
@@ -178,7 +176,7 @@ func (m *NonodoModel) AddVoucher(destination common.Address, payload []byte) (in
 // Add a notice to the model.
 // Return the notice index within the input.
 // Return an error if the state isn't advance.
-func (m *NonodoModel) AddNotice(payload []byte) (int, error) {
+func (m *AppModel) AddNotice(payload []byte) (int, error) {
 	m.Mutex.Lock()
 	defer m.Mutex.Unlock()
 
@@ -187,7 +185,7 @@ func (m *NonodoModel) AddNotice(payload []byte) (int, error) {
 
 // Add a report to the model.
 // Return an error if the state isn't advance or inspect.
-func (m *NonodoModel) AddReport(payload []byte) error {
+func (m *AppModel) AddReport(payload []byte) error {
 	m.Mutex.Lock()
 	defer m.Mutex.Unlock()
 
@@ -196,7 +194,7 @@ func (m *NonodoModel) AddReport(payload []byte) error {
 
 // Finish the current input with an exception.
 // Return an error if the state isn't advance or inspect.
-func (m *NonodoModel) RegisterException(payload []byte) error {
+func (m *AppModel) RegisterException(payload []byte) error {
 	m.Mutex.Lock()
 	defer m.Mutex.Unlock()
 
@@ -214,11 +212,11 @@ func (m *NonodoModel) RegisterException(payload []byte) error {
 // Auxiliary Methods
 //
 
-func (m *NonodoModel) GetProcessedInputCount() int {
-	filter := []*model.ConvenienceFilter{}
+func (m *AppModel) GetProcessedInputCount() int {
+	filter := []*ConvenienceFilter{}
 	field := "Status"
 	value := fmt.Sprintf("%d", CompletionStatusUnprocessed)
-	filter = append(filter, &model.ConvenienceFilter{
+	filter = append(filter, &ConvenienceFilter{
 		Field: &field,
 		Ne:    &value,
 	})
