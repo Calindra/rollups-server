@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/calindra/rollups-server/src/model"
@@ -33,5 +34,10 @@ func main() {
 	inputBoxSequencer := sequencer.NewInputBoxSequencer(modelInstance)
 
 	rollup.Register(e, modelInstance, inputBoxSequencer)
-	e.Start(fmt.Sprintf(":%s", DefaultRollupsPort))
+
+	port := fmt.Sprintf(":%d", DefaultRollupsPort)
+
+	if err := e.Start(port); err != nil {
+		slog.Error("Failed to start server", "Error", err)
+	}
 }
