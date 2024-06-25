@@ -12,6 +12,7 @@ import (
 )
 
 const INDEX_FIELD = "Index"
+const WHERE = "WHERE "
 
 type InputRepository struct {
 	Db *sqlx.DB
@@ -282,7 +283,7 @@ func transformToInputQuery(
 ) (string, []interface{}, int, error) {
 	query := ""
 	if len(filter) > 0 {
-		query += "WHERE "
+		query += WHERE
 	}
 	args := []interface{}{}
 	where := []string{}

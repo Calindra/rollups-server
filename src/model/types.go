@@ -9,6 +9,10 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
+const INPUT_INDEX = "InputIndex"
+const EXECUTED = "Executed"
+const DESTINATION = "Destination"
+
 // Rollups voucher type.
 type Voucher struct {
 	Index       int
@@ -93,4 +97,33 @@ type ConvenienceFilter struct {
 	Nin   []*string            `json:"nin,omitempty"`
 	And   []*ConvenienceFilter `json:"and,omitempty"`
 	Or    []*ConvenienceFilter `json:"or,omitempty"`
+}
+
+// Voucher metadata type
+type ConvenienceVoucher struct {
+	Destination common.Address `db:"destination"`
+	Payload     string         `db:"payload"`
+	InputIndex  uint64         `db:"input_index"`
+	OutputIndex uint64         `db:"output_index"`
+	Executed    bool           `db:"executed"`
+
+	// Proof we can fetch from the original GraphQL
+
+	// future improvements
+	// Contract        common.Address
+	// Beneficiary     common.Address
+	// Label           string
+	// Amount          uint64
+	// ExecutedAt      uint64
+	// ExecutedBlock   uint64
+	// InputIndex      int
+	// OutputIndex     int
+	// MethodSignature string
+	// ERCX            string
+}
+
+type ConvenienceNotice struct {
+	Payload     string `db:"payload"`
+	InputIndex  uint64 `db:"input_index"`
+	OutputIndex uint64 `db:"output_index"`
 }

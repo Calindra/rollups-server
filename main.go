@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/calindra/rollups-server/src/container"
 	"github.com/calindra/rollups-server/src/model"
 	"github.com/calindra/rollups-server/src/rollup"
 	"github.com/calindra/rollups-server/src/sequencer"
@@ -20,9 +21,10 @@ const HttpTimeout = 10 * time.Second
 func main() {
 
 	db := sqlx.MustConnect("sqlite3", "file:memory1?mode=memory&cache=shared")
-	//decoder := container.GetOutputDecoder()
+	container := container.NewContainer(*db)
+	decoder := container.GetOutputDecoder()
 
-	modelInstance := model.NewAppModel(nil, db)
+	modelInstance := model.NewAppModel(decoder, db)
 
 	e := echo.New()
 	e.Use(middleware.CORS())

@@ -10,8 +10,6 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-const INPUT_INDEX = "InputIndex"
-
 type ReportRepository struct {
 	Db *sqlx.DB
 }
