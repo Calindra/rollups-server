@@ -97,7 +97,7 @@ func NewRollupsStateAdvance(
 	reportRepository *ReportRepository,
 	inputRepository *InputRepository,
 ) *rollupsStateAdvance {
-	slog.Info("nonodo: processing advance", "index", input.Index)
+	slog.Info("rollups-server: processing advance", "index", input.Index)
 	return &rollupsStateAdvance{
 		input:            input,
 		decoder:          decoder,
@@ -183,7 +183,7 @@ func (s *rollupsStateAdvance) Finish(status CompletionStatus) {
 	if err != nil {
 		panic(err)
 	}
-	slog.Info("nonodo: finished advance")
+	slog.Info("rollups-server: finished advance")
 }
 
 func (s *rollupsStateAdvance) AddVoucher(destination common.Address, payload []byte) (int, error) {
@@ -195,7 +195,7 @@ func (s *rollupsStateAdvance) AddVoucher(destination common.Address, payload []b
 		Payload:     payload,
 	}
 	s.vouchers = append(s.vouchers, voucher)
-	slog.Info("nonodo: added voucher", "index", index, "destination", destination,
+	slog.Info("rollups-server: added voucher", "index", index, "destination", destination,
 		"payload", hexutil.Encode(payload))
 	return index, nil
 }
@@ -208,7 +208,7 @@ func (s *rollupsStateAdvance) AddNotice(payload []byte) (int, error) {
 		Payload:    payload,
 	}
 	s.notices = append(s.notices, notice)
-	slog.Info("nonodo: added notice", "index", index, "payload", hexutil.Encode(payload))
+	slog.Info("rollups-server: added notice", "index", index, "payload", hexutil.Encode(payload))
 	return index, nil
 }
 
@@ -220,7 +220,7 @@ func (s *rollupsStateAdvance) AddReport(payload []byte) error {
 		Payload:    payload,
 	}
 	s.reports = append(s.reports, report)
-	slog.Info("nonodo: added report", "index", index, "payload", hexutil.Encode(payload))
+	slog.Info("rollups-server: added report", "index", index, "payload", hexutil.Encode(payload))
 	return nil
 }
 
@@ -233,7 +233,7 @@ func (s *rollupsStateAdvance) RegisterException(payload []byte) error {
 		panic(err)
 	}
 	saveAllReports(s.reportRepository, s.reports)
-	slog.Info("nonodo: finished advance with exception")
+	slog.Info("rollups-server: finished advance with exception")
 	return nil
 }
 
@@ -252,7 +252,7 @@ func NewRollupsStateInspect(
 	input *InspectInput,
 	getProcessedInputCount func() int,
 ) *rollupsStateInspect {
-	slog.Info("nonodo: processing inspect", "index", input.Index)
+	slog.Info("rollups-server: processing inspect", "index", input.Index)
 	return &rollupsStateInspect{
 		input:                  input,
 		getProcessedInputCount: getProcessedInputCount,
@@ -263,7 +263,7 @@ func (s *rollupsStateInspect) Finish(status CompletionStatus) {
 	s.input.Status = status
 	s.input.ProcessedInputCount = s.getProcessedInputCount()
 	s.input.Reports = s.reports
-	slog.Info("nonodo: finished inspect")
+	slog.Info("rollups-server: finished inspect")
 }
 
 func (s *rollupsStateInspect) AddVoucher(destination common.Address, payload []byte) (int, error) {
@@ -282,7 +282,7 @@ func (s *rollupsStateInspect) AddReport(payload []byte) error {
 		Payload:    payload,
 	}
 	s.reports = append(s.reports, report)
-	slog.Info("nonodo: added report", "index", index, "payload", hexutil.Encode(payload))
+	slog.Info("rollups-server: added report", "index", index, "payload", hexutil.Encode(payload))
 	return nil
 }
 
@@ -291,6 +291,6 @@ func (s *rollupsStateInspect) RegisterException(payload []byte) error {
 	s.input.ProcessedInputCount = s.getProcessedInputCount()
 	s.input.Reports = s.reports
 	s.input.Exception = payload
-	slog.Info("nonodo: finished inspect with exception")
+	slog.Info("rollups-server: finished inspect with exception")
 	return nil
 }

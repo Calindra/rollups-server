@@ -33,7 +33,7 @@ Press Ctrl+C to stop the server
 func main() {
 	startTime := time.Now()
 	var w supervisor.SupervisorWorker
-	db := sqlx.MustConnect("sqlite3", "file:memory1?mode=memory&cache=shared")
+	db := sqlx.MustConnect("sqlite3", "sqlite3")
 	container := container.NewContainer(*db)
 	decoder := container.GetOutputDecoder()
 

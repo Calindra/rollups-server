@@ -76,7 +76,7 @@ func (m *AppModel) AddAdvanceInput(
 	if err != nil {
 		panic(err)
 	}
-	slog.Info("nonodo: added advance input", "index", input.Index, "sender", input.MsgSender,
+	slog.Info("rollups-server: added advance input", "index", input.Index, "sender", input.MsgSender,
 		"payload", hexutil.Encode(input.Payload))
 }
 
